@@ -17,8 +17,6 @@ public class Calculator extends AppCompatActivity {
     TextView input;
     TextView result;
 
-    Double numericResult;
-
     LinkedList<String> operation;
 
     
@@ -53,31 +51,56 @@ public class Calculator extends AppCompatActivity {
         for (String value : this.operation){
             if (isNumber(value)){
                 wholeNumber.append(value);
-                return;
+            } else {
+                if (!wholeNumber.toString().equals(""))
+                    operationCorrected.add(wholeNumber.toString());
+                operationCorrected.add(value);
+                wholeNumber = new StringBuffer();
             }
-            if (!wholeNumber.toString().equals(""))
-                operationCorrected.add(wholeNumber.toString());
-            operationCorrected.add(value);
-            wholeNumber = new StringBuffer();
         }
+        operationCorrected.add(wholeNumber.toString());
         this.operation = operationCorrected;
         performDivisionMultiplication();
+        performAdditionSubtraction();
 
+        this.result.setText(this.operation.get(0));
+        this.input.setText("");
+        this.operation = new LinkedList<>();
     }
 
     private void performDivisionMultiplication() {
-        LinkedList<String> operationCorrected = new LinkedList<>();
         while (true) {
             int index = firstDivisionOrMultiplication();
             if(index == -1){
-                return;
+                break;
             }
             if (Objects.equals(this.operation.get(index), "/")){
                 Double result = Double.parseDouble(this.operation.get(index-1))/Double.parseDouble(this.operation.get(index+1));
-                operationCorrected.add(result.toString());
+                this.operation.add(index-1, result.toString());
+                refreshOperation(index);
+            } else {
+                Double result = Double.parseDouble(this.operation.get(index-1))*Double.parseDouble(this.operation.get(index+1));
+                this.operation.add(index-1, result.toString());
+                refreshOperation(index);
             }
+        }
+    }
 
-
+    private void performAdditionSubtraction() {
+        while (true) {
+            int index = firstAdditionSubtraction();
+            if(index == -1){
+                break;
+            }
+            if (Objects.equals(this.operation.get(index), "+")){
+                Double result = Double.parseDouble(this.operation.get(index-1))+Double.parseDouble(this.operation.get(index+1));
+                this.operation.add(index-1, result.toString());
+                refreshOperation(index);
+            } else {
+                Double result = Double.parseDouble(this.operation.get(index-1))-Double.parseDouble(this.operation.get(index+1));
+                this.operation.add(index-1, result.toString());
+                refreshOperation(index);
+            }
         }
     }
 
@@ -97,4 +120,18 @@ public class Calculator extends AppCompatActivity {
         return -1;
     }
 
+    private int firstAdditionSubtraction() {
+        for(int i = 0; i < this.operation.size(); i++){
+            if (Objects.equals(this.operation.get(i), "+") || Objects.equals(this.operation.get(i), "-")){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void refreshOperation(int index) {
+        this.operation.remove(index);
+        this.operation.remove(index);
+        this.operation.remove(index);
+    }
 }
