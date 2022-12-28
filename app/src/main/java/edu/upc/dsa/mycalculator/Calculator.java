@@ -16,6 +16,8 @@ public class Calculator extends AppCompatActivity {
 
     TextView input;
     TextView result;
+    Button typeButton;
+    String type;
 
     LinkedList<String> operation;
 
@@ -28,6 +30,18 @@ public class Calculator extends AppCompatActivity {
 
         this.input = findViewById(R.id.inputText);
         this.result = findViewById(R.id.resultText);
+        this.typeButton = findViewById(R.id.typeBtn);
+        this.type = "rad";
+    }
+
+    public void changeType(View view) {
+        if(Objects.equals(this.type, "rad")){
+            this.type = "deg";
+            this.typeButton.setText("deg");
+        } else {
+            this.type = "rad";
+            this.typeButton.setText("rad");
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -60,12 +74,46 @@ public class Calculator extends AppCompatActivity {
         }
         operationCorrected.add(wholeNumber.toString());
         this.operation = operationCorrected;
+        performSinCosTan();
         performDivisionMultiplication();
         performAdditionSubtraction();
 
         this.result.setText(this.operation.get(0));
         this.input.setText("");
         this.operation = new LinkedList<>();
+    }
+
+    private void performSinCosTan() {
+        while (true) {
+            int index = firstSinCosTan();
+            if(index == -1){
+                break;
+            }
+            Double result;
+            if (Objects.equals(this.operation.get(index), "sin:")) {
+                if (Objects.equals(type, "deg"))
+                    result = Math.sin(Math.toRadians(Double.parseDouble(this.operation.get(index+1))));
+                else
+                    result = Math.sin(Double.parseDouble(this.operation.get(index+1)));
+                this.operation.add(index, result.toString());
+            }
+            if (Objects.equals(this.operation.get(index), "cos:")) {
+                if (Objects.equals(type, "deg"))
+                    result = Math.cos(Math.toRadians(Double.parseDouble(this.operation.get(index+1))));
+                else
+                    result = Math.cos(Double.parseDouble(this.operation.get(index+1)));
+                this.operation.add(index, result.toString());
+            }
+            if (Objects.equals(this.operation.get(index), "tan:")) {
+                if (Objects.equals(type, "deg"))
+                    result = Math.tan(Math.toRadians(Double.parseDouble(this.operation.get(index+1))));
+                else
+                    result = Math.tan(Double.parseDouble(this.operation.get(index+1)));
+                this.operation.add(index, result.toString());
+            }
+            this.operation.remove(index+1);
+            this.operation.remove(index+1);
+        }
     }
 
     private void performDivisionMultiplication() {
@@ -77,12 +125,11 @@ public class Calculator extends AppCompatActivity {
             if (Objects.equals(this.operation.get(index), "/")){
                 Double result = Double.parseDouble(this.operation.get(index-1))/Double.parseDouble(this.operation.get(index+1));
                 this.operation.add(index-1, result.toString());
-                refreshOperation(index);
             } else {
                 Double result = Double.parseDouble(this.operation.get(index-1))*Double.parseDouble(this.operation.get(index+1));
                 this.operation.add(index-1, result.toString());
-                refreshOperation(index);
             }
+            refreshOperation(index);
         }
     }
 
@@ -95,20 +142,30 @@ public class Calculator extends AppCompatActivity {
             if (Objects.equals(this.operation.get(index), "+")){
                 Double result = Double.parseDouble(this.operation.get(index-1))+Double.parseDouble(this.operation.get(index+1));
                 this.operation.add(index-1, result.toString());
-                refreshOperation(index);
             } else {
                 Double result = Double.parseDouble(this.operation.get(index-1))-Double.parseDouble(this.operation.get(index+1));
                 this.operation.add(index-1, result.toString());
-                refreshOperation(index);
             }
+            refreshOperation(index);
         }
     }
 
     private boolean isNumber(String value){
         if (!Objects.equals(value, "/") && !Objects.equals(value, "-") &&
-                !Objects.equals(value, "+") && !Objects.equals(value, "x"))
+                !Objects.equals(value, "+") && !Objects.equals(value, "x") &&
+                !Objects.equals(value, "sin:") && !Objects.equals(value, "cos:") && !Objects.equals(value, "tan:"))
             return true;
         return false;
+    }
+
+    private int firstSinCosTan() {
+        for(int i = 0; i < this.operation.size(); i++){
+            if (Objects.equals(this.operation.get(i), "sin:") || Objects.equals(this.operation.get(i), "cos:")
+                    || Objects.equals(this.operation.get(i), "tan:")){
+                return i;
+            }
+        }
+        return -1;
     }
 
     private int firstDivisionOrMultiplication() {
